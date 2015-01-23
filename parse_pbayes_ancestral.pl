@@ -8,7 +8,7 @@ use Data::Dumper;
 # parse_pbayes_ancestral.pl
 # Iker Irisarri, University of Konstanz, Jan 2014
 # It parses output of ancestral (phylobayes package) that generates a complete history of substitution along the phylogeny, and outputs replacements that ocurr in >=90% of the points/replicates for a number of nodes of interest
-# It would be possible to set a burnin to ignore a given number of initial points
+# It seems phylobayes already removes the initial cycles (20%), so all points that are written to *.sub are post-burnin
 
 # ancestral should be run with a fixed tree topology, which it is fixed to tet+lf, but could be modified
 # IMPORTANT!! We can only know the TYPE of substitutions, NOT the DIRECTION. This is because of the way ancestral outputs trees (first and last elements of the string are not the ancestral and derived states, respectively. It depends on how the tree is written by ancestral.
@@ -46,11 +46,11 @@ while ( my $line = <IN> ) {
 
 	($aln_pos, $tree) = split ("\t", $line);
 
+
 ## NEED TO CHOOSE ONE TOPOLOGY AND COMMENT OUT THE OTHER TOPOLOGY ##
 
-##### FOR FIXED TOPOLOGY LF+TET #####
 	
-	# match synapomorphic changes for tets
+	# match synapomorphic changes for tets in tree lf+tet
 	$tree =~ /\)([\w\d\.:-]+),\(\(Protopteru_/;
 
 	# example of information from node:
@@ -65,7 +65,7 @@ while ( my $line = <IN> ) {
 	$tet{$aln_pos}{$point}{$rep} = [@replacements_tet];
 
 
-	# match synapomorphic changes for lfs (1) and lf+tet (2) 
+	# match synapomorphic changes for lfs (1) and lf+tet (2) in tree lf+tet
 	$tree =~/Neoceratod_[\w\d\.:-]+\)([\w\d\.:-]+)\)([\w\d\.:-]+),Latimeria_/;
 
 	my $replacements_lfs = get_replacements($1);
@@ -78,7 +78,7 @@ while ( my $line = <IN> ) {
         $lfs_tet{$aln_pos}{$point}{$rep} = [@replacements_lfs_tet];
 
 
-	# match synapomorphic changes for sarco
+	# match synapomorphic changes for sarco in tree lf+tet
 	$tree =~/Latimeria__[\w\d\.:-]+\)([\w\d\.:-]+),\(\(Oreochromi/;
 
 	my $replacements_sarco = get_replacements($1);
@@ -88,27 +88,21 @@ while ( my $line = <IN> ) {
 	$sarco{$aln_pos}{$point}{$rep} = [@replacements_lfs];
 
 
-        }
-
-
-##### FOR FIXED TOPOLOGY LF+COE #####
-
-# alternatives for that topology would go here
-
+    }
 }
 
 # send hashes to subroutine to analyze and print
 
-print "\ntetrapods\n\n";
+print "\ntetrapods\n";
 count_replacements_and_print(\%tet);
 
-print "\nlungfishess\n\n";
+print "\nlungfishes\n";
 count_replacements_and_print(\%lfs);
 
-print "\nlungfish+tetrapods\n\n";
+print "\nlungfish+tetrapods\n";
 count_replacements_and_print(\%lfs_tet);
 
-print "\nsarcopterygians\n\n";
+print "\nsarcopterygians\n";
 count_replacements_and_print(\%sarco);
 
 
@@ -151,10 +145,11 @@ sub get_replacements {
 }
 
 
+
 sub count_replacements_and_print {
 
     my $hash_ref = shift;
-    my $none_count;
+    my $point_count;
     my $change_count;
     my %synapom;
 
@@ -165,7 +160,7 @@ sub count_replacements_and_print {
     foreach my $aln ( keys %clade_results ) {
 
 	# reinitialize counts and @t_synapom for each new aln position
-	$none_count = 0;
+	$point_count = 0;
 	$change_count = 0;
 	%synapom = ();
 
@@ -177,7 +172,7 @@ sub count_replacements_and_print {
 	    foreach my $rep (keys %{ ${ $clade_results{$aln} }{$point} } ) {
 
 		# count empty arrays, withouth changes ('none')
-		$none_count++;
+		$point_count++;
 
 		my @value_array = @{ ${ ${ $clade_results{$aln} }{$point} }{$rep} };
 
@@ -211,17 +206,20 @@ sub count_replacements_and_print {
 
 	foreach my $syn ( keys %synapom ) {
 
-	    my $percent = ($synapom{$syn}/$none_count)*100;
+	    my $percent = ($synapom{$syn}/$point_count)*100;
 	
 	    # print out replacement if present in at least 90% of the points/replicates
 	    if ( $percent > 90 ) {
 
-		print "\n\taln_pos: $aln\n";
-		print $syn, " in $percent % of points/replicates\n";
+		print "\n\taln pos: $aln\t";
+		print $syn, "\tin $percent % of points/replicates";
 
 	    }
 	}
+
     }
+
+    print "\n";
 
 }
 
