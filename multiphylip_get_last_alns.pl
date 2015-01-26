@@ -32,6 +32,7 @@ while ( my $line = <IN> ) {
     
     }
 
+    # print out lines for the alns after the provided $aln_num has been reached
     if ( $count > $aln_num ) {
 
 	print "$line\n";
