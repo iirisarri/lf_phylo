@@ -5,8 +5,9 @@ use warnings;
 use Bio::TreeIO;
 use Data::Dumper;
 
-# parse_tree_check_monophyly.pl
-# Iker Irisarri, University of Konstanz 2014
+# parse_tree_check_outparalogs.pl
+# Iker Irisarri, University of Konstanz 2015
+# Slight modification of parse_tree_check_monophyly.pl
 # Intended to be run in a for loop (bash) to test multiple trees (in individual files)
 # possibility to run also a single file with multiple trees (check options bellow for tracking trees)
 # requires (1) one tree; (2) file with taxa for which we want to test for monophyly (allows comments with #)
@@ -26,24 +27,25 @@ use Data::Dumper;
 
 #########################################################################
 
-my $usage = "parse_trees_check_monophyly.pl tree monophyly_file outgroup> stdout\n";
+my $usage = "parse_trees_check_outparalogs.pl tree monophyly_file > stdout\n";
 my $in_tree = $ARGV[0] or die $usage;
 my $clade = $ARGV[1] or die $usage;
-my $outgroup = $ARGV[2] or die $usage;
-my $outfile = "output";
+my $outgroup;
+
+
 
 # get taxa from $clade file
 
 open (IN, "<", $clade) or die "Cannot open file $clade: $!\n";
-open (OUT, ">", $outfile) or die "Cannot create output file: $!\n";
 
 my $tree_num = 0;
 my $tax_num = 0;
 my @clade;
 my @clade2;
+my @clade3;
 my @test_taxa;
 my @lca_desc;
-my @sorted_clade2;
+my @sorted_clade3;
 my @sorted_lca_descend;
 
 while ( my $line = <IN> ) {
@@ -84,20 +86,34 @@ while( my $tree = $treeio->next_tree ) {
     # store taxa into a hash where keys are taxa names
     my %leaves = %{ &get_all_leaves($tree->get_root_node) };
 
+    # define outgroup
+
+    if ( exists $leaves{'Petromyzon_marinus'} ) {
+	$outgroup = "Petromyzon_marinus";
+    } elsif ( exists $leaves{'Callorhinchus_milii'} ) {
+        $outgroup = "Callorhinchus_milii";
+    } elsif ( exists $leaves{'Lepisosteus_oculatus'} ) {
+        $outgroup = "Lepisosteus_oculatus";
+    } elsif ( exists $leaves{'Danio_rerio'} ) {
+        $outgroup = "Danio_rerio";
+    } elsif ( exists $leaves{'Takifugu_rubripes'} ) {
+        $outgroup = "Takifugu_rubripes";
+    } elsif ( exists $leaves{'Oreochromis_niloticus'} ) {
+	$outgroup = "Oreochromis_niloticus";
+    } else {
+	print STDERR "outgroup not found!\n";
+    }
+
     # remove taxa from @clade2 if not present in this particular tree
-   foreach my $taxa (@clade2) {
-	if ( !exists $leaves{$taxa} ) {
+    foreach my $taxa (@clade2) {
+
+	if ( exists $leaves{$taxa} ) {
             # print join ("--", @clade), "\n\n";
-            # remove $taxa not present in the current tree
-	    @clade2 = grep {$_ ne $taxa} @clade2;
+            # include taxa present in the current tree
+	    push (@clade3, $taxa);
+#	    @clade2 = grep {$_ ne $taxa} @clade2;
             # print join ("--", @clade), "\n\n";                
 	}
-	#alternative way to do this
-	#the above method gave problems in parse_tree_check_outparalogs.pl
-	#if ( exists $leaves{$taxa} ) {
-	## push into a new array (should change code after to use @clade3)
-	#    push (@clade3, $taxa)
-	#}
     }
 
     foreach my $key (keys %leaves) {
@@ -112,6 +128,7 @@ while( my $tree = $treeio->next_tree ) {
 	if ( $key eq $outgroup ) {
 	    my $root = $tree->find_node( -id => $key );
 	    $tree->reroot( $root );
+	    last;
 	}
     }    
 
@@ -120,18 +137,21 @@ while( my $tree = $treeio->next_tree ) {
     # 1st, check that we have at least 2 taxa in @clade
     # 2nd, need to find the nodes for taxa in the monophyly test & outgroup!
     # find node for taxa 
-    $tax_num = scalar @clade2;
+    $tax_num = scalar @clade3;
     if ( $tax_num < 2 ) {
 	print "\tAt least two taxa are required for testing monophyly and only $tax_num is present\n\n";
     }
     else {
 
-	foreach my $i (@clade2) {
+	foreach my $i (@clade3) {
 	    my $node = $tree->find_node(-id => $i);
 	    # $node is a Bio::Tree::Node object
+	    #check that this node exists!! 
+	    if ( !defined $node ) {
+		print "$i\tnot defined!!!n"
+	    };
 	    push (@test_taxa, $node);
 	}
-
 
 ### Custom monophyly test ###
 
@@ -154,46 +174,29 @@ while( my $tree = $treeio->next_tree ) {
 	}
 
 	# sort both arrays
-	@sorted_clade2 = sort (@clade2);
+	@sorted_clade3 = sort (@clade3);
 	@sorted_lca_descend = sort (@lca_descend);
 	
 	# compare sorted arrays
-	if (@sorted_clade2 == @sorted_lca_descend){
-	    print "\tMonophyly of the following taxa:\n\t";
-	    print join (" ", @sorted_clade2), "\n";
+	# I think this compares lengths of arrays, not all elements
+	# But will work in this case, since number of taxa descending from their lca should be
+	# the same to the taxa for which we want to test monophyly only when they are monophyletic
+	if (@sorted_clade3 == @sorted_lca_descend){
+	    print "\tMonophyletic\n";
+	    #print join (" ", @sorted_clade2), "\n";
 	}
 	else {
-	    print "\tTaxa are not monophyletic :-(\n\n";
+	    print "\tTaxa are not monophyletic :-(\n";
 #	    $out->write_tree($tree);
 	}
 
 ### End of monophyly test ###
 
-## Original code for is_monophyletic ####
-#	my $outg_node = $tree->find_node(-id => $outgroup);
-#
-#	# monophyly test
-#	# checks if the mrca of all the members of @clade is more recent than the mrca of any of them with the outgroup
-#	# change to this line for paraphyly test
-#	# note that the paraphyly test will also return true even if the taxa being tested do not branch consecutively
-#	# (e.g. a, c, d will be paraphylyletic in the following tree: (out,(a,(b,(c,d))))
-#	# if ( $tree->is_paraphyletic( -nodes => \@test_taxa,
-#
-#	if ( $tree->is_monophyletic( -nodes => \@test_taxa,
-#				     -outgroup => $outg_node ) ) {
-#	    print "\tMonophyly of the following taxa in $clade:\n\t";
-#	    print join (" ", @clade2), "\n";
-#	}
-#	else {
-#	    print "\tTaxa are not monophyletic :-(\n";
-#	    # print out trees not satisfying monophyly test to new file
-#	    $out->write_tree($tree);
-#	}
-############################################
     }
 }
 
-close(OUT);
+
+#close(OUT);
 
 ## SUBROUTINES ##
 
