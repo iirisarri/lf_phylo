@@ -80,6 +80,20 @@ elsif (exists $hash{Danio_rerio}) {
     }
 
 }
+
+elsif (exists $hash{Takifugu_rubripes}) {
+
+    $hash{outgroup}=$hash{Takifugu_rubripes};
+
+    delete $hash{Takifugu_rubripes};
+
+    foreach my $name (sort keys %hash) {
+        print ">", $name, "\n";
+        print $hash{$name}[0], "\n";
+    }
+
+}
+
 else {
 
     print STDERR "OUTGROUP MISSING!!\n";
