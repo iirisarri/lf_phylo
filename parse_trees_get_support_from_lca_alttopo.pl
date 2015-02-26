@@ -38,13 +38,22 @@ my $monophyly_test_3 = 0;
 my $monophyly_test_4 = 0;
 
 # hard-coded arrays for dataset 251_amemiya_lf
-my $outgroup = "Chondricht";
-my @sarcs = qw (Latimeria_ Lepidosire Neoceratod Protopteru Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
-my @tets = qw (Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
-my @lfs = qw (Lepidosire Neoceratod Protopteru);
-my @tet_lf = qw (Lepidosire Neoceratod Protopteru Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
-my @tet_lat = qw (Latimeria_ Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
-my @lfs_lat = qw (Latimeria_ Lepidosire Neoceratod Protopteru);
+#my $outgroup = "Chondricht";
+#my @sarcs = qw (Latimeria_ Lepidosire Neoceratod Protopteru Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
+#my @tets = qw (Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
+#my @lfs = qw (Lepidosire Neoceratod Protopteru);
+#my @tet_lf = qw (Lepidosire Neoceratod Protopteru Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
+#my @tet_lat = qw (Latimeria_ Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
+#my @lfs_lat = qw (Latimeria_ Lepidosire Neoceratod Protopteru);
+
+# hard-coded arrays for dataset 1821_strict_3lf
+my $outgroup = "outgroup";
+my @sarcs = qw (Latimeria_chalumnae Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens Anolis_carolinensis Canis_lupus_familiaris Dasypus_novemcinctus Gallus_gallus Homo_sapiens Loxodonta_africana Macropus_eugenii Meleagris_gallopavo Monodelphis_domestica Mus_musculus Ornithorhynchus_anatinus Pelodiscus_sinensis Taeniopygia_guttata Xenopus_Silurana_tropicalis);
+my @tets = qw (Anolis_carolinensis Canis_lupus_familiaris Dasypus_novemcinctus Gallus_gallus Homo_sapiens Loxodonta_africana Macropus_eugenii Meleagris_gallopavo Monodelphis_domestica Mus_musculus Ornithorhynchus_anatinus Pelodiscus_sinensis Taeniopygia_guttata Xenopus_Silurana_tropicalis);
+my @lfs = qw (Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens);
+my @tet_lf = qw (Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens Anolis_carolinensis Canis_lupus_familiaris Dasypus_novemcinctus Gallus_gallus Homo_sapiens Loxodonta_africana Macropus_eugenii Meleagris_gallopavo Monodelphis_domestica Mus_musculus Ornithorhynchus_anatinus Pelodiscus_sinensis Taeniopygia_guttata Xenopus_Silurana_tropicalis);
+my @tet_lat = qw (Latimeria_chalumnae Anolis_carolinensis Canis_lupus_familiaris Dasypus_novemcinctus Gallus_gallus Homo_sapiens Loxodonta_africana Macropus_eugenii Meleagris_gallopavo Monodelphis_domestica Mus_musculus Ornithorhynchus_anatinus Pelodiscus_sinensis Taeniopygia_guttata Xenopus_Silurana_tropicalis);
+my @lfs_lat = qw (Latimeria_chalumnae Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens);
 
 # select 4th monophyly test that will discriminate between the 3 possible hypotheses
 my @custom_test = @tet_lf;
