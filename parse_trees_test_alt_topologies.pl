@@ -25,7 +25,7 @@ use Data::Dumper;
 
 #########################################################################
 
-my $usage = "parse_trees_test_alt_topologies.pl tree monophyly_file outgroup> stdout\n";
+my $usage = "parse_trees_test_alt_topologies.pl tree > stdout\n";
 my $in_tree = $ARGV[0] or die $usage;
 
 my $tree_num = 0;
@@ -44,6 +44,16 @@ my @lfs = qw (Lepidosire Neoceratod Protopteru);
 my @tet_lf = qw (Lepidosire Neoceratod Protopteru Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
 my @tet_lat = qw (Latimeria_ Anolis_car Canis_fami Dasypus_no Gallus_gal Homo_sapie Loxodonta_ Macropus_e Meleagris_ Monodelphi Mus_muscul Ornithorhy Rana_chine Taeniopygi Xenopus_tr);
 my @lfs_lat = qw (Latimeria_ Lepidosire Neoceratod Protopteru);
+
+# hard-coded arrays for dataset 1821_smx_3lf
+#my $outgroup = "Callorhinchus_milii";
+#my @sarcs = qw (Latimeria_chalumnae Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens Gallus_gallus Anolis_carolinensis Macropus_eugenii Taeniopygia_guttata Homo_sapiens Xenopus_Silurana_tropicalis Monodelphis_domestica Ornithorhynchus_anatinus Loxodonta_africana Pelodiscus_sinensis Dasypus_novemcinctus Canis_lupus_familiaris Meleagris_gallopavo Mus_musculus);
+#my @tets = qw (Gallus_gallus Anolis_carolinensis Macropus_eugenii Taeniopygia_guttata Homo_sapiens Xenopus_Silurana_tropicalis Monodelphis_domestica Ornithorhynchus_anatinus Loxodonta_africana Pelodiscus_sinensis Dasypus_novemcinctus Canis_lupus_familiaris Meleagris_gallopavo Mus_musculus);
+#my @lfs = qw (Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens);
+#my @tet_lf = qw (Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens Gallus_gallus Anolis_carolinensis Macropus_eugenii Taeniopygia_guttata Homo_sapiens Xenopus_Silurana_tropicalis Monodelphis_domestica Ornithorhynchus_anatinus Loxodonta_africana Pelodiscus_sinensis Dasypus_novemcinctus Canis_lupus_familiaris Meleagris_gallopavo Mus_musculus);
+#my @tet_lat = qw (Latimeria_chalumnae Gallus_gallus Anolis_carolinensis Macropus_eugenii Taeniopygia_guttata Homo_sapiens Xenopus_Silurana_tropicalis Monodelphis_domestica Ornithorhynchus_anatinus Loxodonta_africana Pelodiscus_sinensis Dasypus_novemcinctus Canis_lupus_familiaris Meleagris_gallopavo Mus_musculus);
+#my @lfs_lat = qw (Latimeria_chalumnae Lepidosiren_paradoxa Neoceratodus_forsteri Protopterus_annectens);
+
 
 # select 4th monophyly test that will discriminate between the 3 possible hypotheses
 my @custom_test = @tet_lf;
@@ -80,7 +90,7 @@ my $treeio = new Bio::TreeIO(-file   => "$in_tree",
 
 
 # print file name to stdout
-print "File: ", $in_tree, "\n";
+print "File: ", $in_tree, "\t";
 
 while( my $tree = $treeio->next_tree ) {
 
@@ -94,7 +104,7 @@ while( my $tree = $treeio->next_tree ) {
     # track tree number if multiple trees are stored in a single file
     $tree_num++;
     if ( $tree_num > 1) {
-	print "Tree number $tree_num\n";
+	print "Tree # $tree_num\t";
     }
     
     # root the tree with outgroup
@@ -182,7 +192,7 @@ sub monophyly_test {
 
 	# store taxa from @clade that is present in the current tree (remove taxa not present in the tree)
 	foreach my $taxa (@clade) {	
-		if ( !exists $leaves{$taxa} ) {
+		if ( exists $leaves{$taxa} ) {
 	    	push (@clade2, $taxa);
 		}
 	}
@@ -203,8 +213,8 @@ sub monophyly_test {
 
 =cut
 
-	# 1st, check that we have at least 2 taxa in @clade
-	$tax_num = scalar @clade;
+	# 1st, check that we have at least 2 taxa in @clade2
+	$tax_num = scalar @clade2;
 	if ( $tax_num < 2 ) {
 		print "\tAt least two taxa are required for testing monophyly and only $tax_num is present\n\n";
 	}
@@ -212,7 +222,7 @@ sub monophyly_test {
 
 		# 2nd, need to find the nodes for taxa in the monophyly test & outgroup!
 		# find node for taxa 
-		foreach my $i (@clade) {
+		foreach my $i ( @clade2 ) {
 			my $node = $current_tree->find_node(-id => $i);
 			# $node is a Bio::Tree::Node object
 			push (@test_taxa, $node);
